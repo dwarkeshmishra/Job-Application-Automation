@@ -112,9 +112,9 @@ def start_scheduler():
     _scheduler = AsyncIOScheduler()
     _scheduler.add_job(
         nightly_pipeline,
-        CronTrigger(hour=2, minute=0),  # 2:00 AM every night
+        CronTrigger(hour="0,8,16", minute=0),  # Every 8 hours starting at 12 AM
         id="nightly_pipeline",
         replace_existing=True,
     )
     _scheduler.start()
-    logger.info("Scheduler started — nightly job at 2:00 AM")
+    logger.info("Scheduler started — job runs every 8 hours (12 AM, 8 AM, 4 PM)")

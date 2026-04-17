@@ -29,7 +29,7 @@ document.getElementById("captureBtn").addEventListener("click", async () => {
 
     statusEl.textContent = `Sending: ${data.title.substring(0, 30)}...`;
 
-    const response = await fetch("http://localhost:8000/api/jobs/manual", {
+    const response = await fetch("https://job-application-automation-k8gp.onrender.com/api/jobs/manual", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(data)
