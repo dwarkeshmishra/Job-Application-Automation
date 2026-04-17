@@ -70,10 +70,10 @@ class Settings(BaseSettings):
             "http://localhost:5173",
         ]
         if self.FRONTEND_URL:
-            defaults.append(self.FRONTEND_URL)
+            defaults.append(self.FRONTEND_URL.rstrip('/'))
         if self.CORS_ORIGINS:
-            defaults.extend([o.strip() for o in self.CORS_ORIGINS.split(",") if o.strip()])
-        return defaults
+            defaults.extend([o.strip().rstrip('/') for o in self.CORS_ORIGINS.split(",") if o.strip()])
+        return list(set(defaults)) # Unique set of origins
 
     class Config:
         env_file = "../.env"
