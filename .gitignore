@@ -1,0 +1,39 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+venv/
+.venv/
+*.egg-info/
+dist/
+build/
+
+# Environment
+.env
+
+# Data (generated files)
+data/db/
+data/resumes/
+data/exports/
+data/uploads/
+
+# Node
+node_modules/
+frontend/dist/
+frontend/.vite/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Personal files
+Resume*.pdf
+Resume*.docx
+*.resume.pdf
+
+# OS
+.DS_Store
+Thumbs.db

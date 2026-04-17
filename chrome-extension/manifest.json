@@ -1,0 +1,17 @@
+{
+  "manifest_version": 3,
+  "name": "Job Copilot - Capture JD",
+  "version": "1.0",
+  "description": "1-click job description capture to your local copilot",
+  "permissions": ["activeTab", "scripting"],
+  "host_permissions": ["http://localhost:8000/*"],
+  "action": { "default_popup": "popup.html" },
+  "content_scripts": [{
+    "matches": [
+      "*://www.linkedin.com/jobs/*",
+      "*://www.naukri.com/*",
+      "*://in.indeed.com/*"
+    ],
+    "js": ["content.js"]
+  }]
+}

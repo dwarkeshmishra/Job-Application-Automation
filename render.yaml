@@ -1,0 +1,31 @@
+# Render.com deployment configuration
+# https://render.com/docs/blueprint-spec
+
+services:
+  # Backend API
+  - type: web
+    name: job-copilot-api
+    runtime: docker
+    repo: https://github.com/YOUR_USERNAME/job-copilot  # ← Update this
+    dockerfilePath: ./Dockerfile
+    plan: free
+    envVars:
+      - key: GEMINI_API_KEY
+        sync: false  # Set manually in Render dashboard
+      - key: DATABASE_URL
+        fromDatabase:
+          name: job-copilot-db
+          property: connectionString
+      - key: FRONTEND_URL
+        value: https://job-copilot.vercel.app  # ← Update after Vercel deploy
+      - key: CORS_ORIGINS
+        value: https://job-copilot.vercel.app
+      - key: DATA_DIR
+        value: /app/data
+    healthCheckPath: /api/health
+
+databases:
+  - name: job-copilot-db
+    plan: free
+    databaseName: job_copilot
+    user: copilot
