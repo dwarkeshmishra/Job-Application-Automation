@@ -22,7 +22,7 @@ services:
         value: https://job-copilot.vercel.app
       - key: DATA_DIR
         value: /app/data
-    healthCheckPath: /api/health
+    healthCheckPath: /
 
 databases:
   - name: job-copilot-db

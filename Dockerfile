@@ -2,9 +2,9 @@ FROM python:3.11-slim
 
 WORKDIR /app
 
-# System deps for pymupdf
+# System deps for pymupdf and postgres
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    gcc libffi-dev && \
+    gcc libffi-dev libpq-dev && \
     rm -rf /var/lib/apt/lists/*
 
 COPY backend/requirements.txt .
@@ -19,6 +19,5 @@ ENV PYTHONUNBUFFERED=1
 ENV DATA_DIR=/app/data
 ENV DB_PATH=/app/data/db/copilot.db
 
-EXPOSE 8000
-
-CMD ["gunicorn", "main:app", "-w", "2", "-k", "uvicorn.workers.UvicornWorker", "--bind", "0.0.0.0:8000", "--timeout", "120"]
+# Render provides the PORT environment variable
+CMD ["sh", "-c", "uvicorn main:app --host 0.0.0.0 --port ${PORT:-8000} --timeout-keep-alive 120"]
