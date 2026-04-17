@@ -6,7 +6,7 @@ services:
   - type: web
     name: job-copilot-api
     runtime: docker
-    repo: https://github.com/YOUR_USERNAME/job-copilot  # ← Update this
+    repo: https://github.com/dwarkeshmishra/Job-Application-Automation
     dockerfilePath: ./Dockerfile
     plan: free
     envVars:
