@@ -1,9 +1,11 @@
 import { useState, useEffect } from 'react';
 import { getProfile, updateProfile, uploadResume } from '../api/tracker';
+import useStore from '../store/useStore';
 import toast from 'react-hot-toast';
 
 export default function Profile() {
-  const [profile, setProfile] = useState(null);
+  const { profile: cachedProfile, setProfile: setGlobalProfile } = useStore();
+  const [profile, setProfile] = useState(cachedProfile);
   const [form, setForm] = useState({
     full_name: '', email: '', phone: '', location: '',
     linkedin_url: '', github_url: '', years_exp: '',
@@ -13,26 +15,38 @@ export default function Profile() {
   const [saving, setSaving] = useState(false);
   const [uploadResult, setUploadResult] = useState(null);
 
+  // Initialize form from cached profile immediately, then fetch fresh data
   useEffect(() => {
+    // Populate form from cache first (instant UI)
+    if (cachedProfile && !cachedProfile.message) {
+      populateForm(cachedProfile);
+    }
+
+    // Then fetch fresh data from API
     getProfile().then(res => {
       const p = res.data;
       if (p && !p.message) {
         setProfile(p);
-        setForm({
-          full_name: p.full_name || '',
-          email: p.email || '',
-          phone: p.phone || '',
-          location: p.location || '',
-          linkedin_url: p.linkedin_url || '',
-          github_url: p.github_url || '',
-          years_exp: p.years_exp || '',
-          target_roles: (p.target_roles || []).join(', '),
-          target_locations: (p.target_locations || []).join(', '),
-          skills: (p.skills || []).join(', '),
-        });
+        setGlobalProfile(p);  // Persist to Zustand → localStorage
+        populateForm(p);
       }
     }).catch(() => {});
   }, []);
+
+  const populateForm = (p) => {
+    setForm({
+      full_name: p.full_name || '',
+      email: p.email || '',
+      phone: p.phone || '',
+      location: p.location || '',
+      linkedin_url: p.linkedin_url || '',
+      github_url: p.github_url || '',
+      years_exp: p.years_exp || '',
+      target_roles: Array.isArray(p.target_roles) ? p.target_roles.join(', ') : (p.target_roles || ''),
+      target_locations: Array.isArray(p.target_locations) ? p.target_locations.join(', ') : (p.target_locations || ''),
+      skills: Array.isArray(p.skills) ? p.skills.join(', ') : (p.skills || ''),
+    });
+  };
 
   const handleUpload = async (e) => {
     const file = e.target.files[0];
@@ -44,7 +58,11 @@ export default function Profile() {
       toast.success(`Resume parsed! ${res.data.skills_detected?.length || 0} skills detected`);
       // Refresh profile
       const p = await getProfile();
-      if (p.data && !p.data.message) setProfile(p.data);
+      if (p.data && !p.data.message) {
+        setProfile(p.data);
+        setGlobalProfile(p.data);  // Persist to Zustand → localStorage
+        populateForm(p.data);
+      }
     } catch (e) {
       toast.error('Upload failed');
     }
@@ -54,14 +72,22 @@ export default function Profile() {
   const handleSave = async () => {
     setSaving(true);
     try {
-      await updateProfile({
+      const payload = {
         ...form,
         years_exp: form.years_exp ? parseFloat(form.years_exp) : null,
         target_roles: form.target_roles.split(',').map(s => s.trim()).filter(Boolean),
         target_locations: form.target_locations.split(',').map(s => s.trim()).filter(Boolean),
         skills: form.skills.split(',').map(s => s.trim()).filter(Boolean),
-      });
+      };
+      await updateProfile(payload);
       toast.success('Profile saved!');
+
+      // Refresh profile from server and persist
+      const p = await getProfile();
+      if (p.data && !p.data.message) {
+        setProfile(p.data);
+        setGlobalProfile(p.data);  // Persist to Zustand → localStorage
+      }
     } catch (e) {
       toast.error('Save failed');
     }
@@ -97,10 +123,17 @@ export default function Profile() {
             ) : (
               <>
                 <div style={{ fontSize: '2rem', marginBottom: 8 }}>📄</div>
-                <div style={{ fontWeight: 500 }}>Upload Resume</div>
+                <div style={{ fontWeight: 500 }}>
+                  {profile?.resume_path ? 'Upload New Resume' : 'Upload Resume'}
+                </div>
                 <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)', marginTop: 4 }}>
                   PDF or DOCX • Click or drag
                 </div>
+                {profile?.resume_path && (
+                  <div style={{ fontSize: '0.75rem', color: 'var(--accent-primary)', marginTop: 8 }}>
+                    ✓ Resume already uploaded
+                  </div>
+                )}
               </>
             )}
           </div>
@@ -127,8 +160,9 @@ export default function Profile() {
                 DETECTED SKILLS
               </div>
               <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-                {(typeof profile.skills === 'string' ? JSON.parse(profile.skills) : profile.skills)
-                  .map(s => <span key={s} className="skill-tag">{s}</span>)}
+                {(Array.isArray(profile.skills) ? profile.skills :
+                  typeof profile.skills === 'string' ? (() => { try { return JSON.parse(profile.skills); } catch { return []; } })() : []
+                ).map(s => <span key={s} className="skill-tag">{s}</span>)}
               </div>
             </div>
           )}

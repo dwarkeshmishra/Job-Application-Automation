@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import Layout from './components/Layout';
@@ -8,10 +9,32 @@ import ResumeStudio from './pages/ResumeStudio';
 import Profile from './pages/Profile';
 import Settings from './pages/Settings';
 import SkillGap from './pages/SkillGap';
+import useStore from './store/useStore';
+import { getProfile } from './api/tracker';
+
+function AppInitializer() {
+  const setProfile = useStore((s) => s.setProfile);
+
+  useEffect(() => {
+    // Fetch profile from API on app startup and hydrate global store
+    getProfile()
+      .then((res) => {
+        if (res.data && !res.data.message) {
+          setProfile(res.data);
+        }
+      })
+      .catch(() => {
+        // API unavailable — cached data from localStorage will be used
+      });
+  }, []);
+
+  return null;
+}
 
 export default function App() {
   return (
     <BrowserRouter>
+      <AppInitializer />
       <Toaster
         position="top-right"
         toastOptions={{
