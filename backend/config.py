@@ -76,7 +76,7 @@ class Settings(BaseSettings):
         return list(set(defaults)) # Unique set of origins
 
     class Config:
-        env_file = "../.env"
+        env_file = str(Path(__file__).parent.parent / ".env")
         env_file_encoding = "utf-8"
 
 

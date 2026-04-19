@@ -14,10 +14,14 @@ class GeminiService:
 
     def __init__(self):
         key = settings.GEMINI_API_KEY
-        if not key or key == "your_gemini_api_key_here":
-            logger.error("Gemini API key is not set. Please update GEMINI_API_KEY in your .env file.")
-            raise ValueError("GEMINI_API_KEY is not set or is still the default placeholder. "
-                            "Get a key from https://aistudio.google.com/ and add it to your .env file.")
+        # Clean the key (remove quotes or whitespace that might be accidentally included)
+        if key:
+            key = key.strip().strip("'").strip('"')
+            
+        if not key or key == "your_gemini_api_key_here" or len(key) < 10:
+            logger.error("Gemini API key is invalid or not set correctly.")
+            raise ValueError("GEMINI_API_KEY is missing, invalid, or still using the placeholder. "
+                            "Please ensure a valid key from https://aistudio.google.com/ is set in your environment.")
         
         genai.configure(api_key=key)
         self.model = genai.GenerativeModel(settings.GEMINI_MODEL)
