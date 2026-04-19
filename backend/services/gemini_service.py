@@ -13,7 +13,13 @@ class GeminiService:
     """Wrapper around Google Gemini API for LLM operations."""
 
     def __init__(self):
-        genai.configure(api_key=settings.GEMINI_API_KEY)
+        key = settings.GEMINI_API_KEY
+        if not key or key == "your_gemini_api_key_here":
+            logger.error("Gemini API key is not set. Please update GEMINI_API_KEY in your .env file.")
+            raise ValueError("GEMINI_API_KEY is not set or is still the default placeholder. "
+                            "Get a key from https://aistudio.google.com/ and add it to your .env file.")
+        
+        genai.configure(api_key=key)
         self.model = genai.GenerativeModel(settings.GEMINI_MODEL)
         logger.info(f"Gemini service initialized with model: {settings.GEMINI_MODEL}")
 
